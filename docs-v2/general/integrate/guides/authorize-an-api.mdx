@@ -1,0 +1,306 @@
+---
+title: 'Authorize An API'
+sidebarTitle: 'Authorize An API'
+description: 'Step-by-step guide to get user authorization to access an external API on their behalf.'
+---
+
+<Tip>
+    Nango Cloud offers this feature for free and without limits.
+</Tip>
+
+## Create a free Nango account
+
+Sign up for a free Nango account (no credit card needed):
+[![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
+
+## Create an integration
+
+Go to the _Integrations_ tab, choose to configure a new integration and choose an API to integrate with.
+
+<Tip>
+    Each API has a dedicated Nango documentation page with useful links, gotchas, etc.
+</Tip>
+
+APIs have different ways to authorize requests, e.g. OAuth, API key, Basic, and more.
+
+### OAuth Authorization
+
+If the API supports OAuth authorization, you need to register your OAuth application on the developer portal of the API. 
+
+When registering, the API provider will prompt you for the `Callback URL`. Use the one displayed at the bottom of the Nango integration settings. Remember to also register the required scopes both with the API provider (when necessary) and in the Nango integration settings.
+
+Collect your OAuth app's `Client ID` and `Client Secret` from the API portal and input them in your Nango integration settings.
+
+### API Key & Basic Authorization
+
+No additional configuration is necessary for APIs supporting API key & Basic authorization.
+
+### Custom Authorization
+
+Some APIs have custom authorization modes, for example GitHub Apps, Stripe, etc. Configuration needs vary and are described in the Nango integration settings.
+
+## Test the authorization
+
+In the Nango integration page, click `Connect` to test the authorization. 
+
+### OAuth Authorization
+
+Input your external account credentials in the popup dialog to test the authorization. 
+
+### API Key 
+
+Input the API key to test the authorization.
+
+### Basic Authorization
+
+Input the Username and Password to test the authorization.
+
+### Custom Authorization
+
+The authorization flow will vary based on the API, but you will most likely have to login to your external via a popup dialog. 
+
+## Integrate the frontend SDK
+
+Once you have tested that the authorization flow works, you can trigger authorization flows from your app frontend with the Nango SDK. 
+
+In your app frontend, initiate Nango:
+
+<Tabs>
+
+<Tab title="Nango Cloud">
+
+Get your `Public Key` from the [Project Settings](https://app.nango.dev/project-settings) page.
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
+```
+
+</Tab>
+
+<Tab title="Localhost">
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: 'http://localhost:3003', publicKey: '<PUBLIC-KEY>' });
+```
+
+</Tab>
+
+<Tab title="Self-hosted">
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: '<INSTANCE-URL>', publicKey: '<PUBLIC-KEY>' });
+```
+
+If you have configured your self-hosted instance to use a [custom websockets path](/use/self-hosting-instructions#custom-websockets-path),
+you will also need to set the `websocketsPath` configuration option:
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: '<INSTANCE-URL>', publicKey: '<PUBLIC-KEY>', websocketsPath: '/<YOUR-WEBSOCKETS-PATH>' });
+```
+</Tab>
+
+</Tabs>
+
+Initiate the authorization flow:
+
+<Tabs>
+
+<Tab title="OAuth">
+
+For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+    .then((result) => {
+        // result is an object with:
+        // {
+        //      providerConfigKey: '<INTEGRATION-ID>',
+        //      connectionId: '<CONNECTION-ID>
+        // }
+    })
+    .catch((error) => {
+        // Error is an object with:
+        // {
+        //    error: {
+        //      type: 'authorization_cancelled', (or similar)
+        //      message: 'Authorization fail: The user has closed the authorization modal before the process was complete.'  (or similar)
+        //    }
+        // }
+    });
+```
+
+</Tab>
+
+<Tab title="API Key">
+
+For API keys, the `nango.auth()` method is used to store the end-user's API key (that you have previously collected from them).
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+        credentials: {
+            apiKey: '<END-USER-API-KEY>'
+        }
+    })
+    .then((result) => {
+        // result is an object with:
+        // {
+        //      providerConfigKey: '<INTEGRATION-ID>',
+        //      connectionId: '<CONNECTION-ID>
+        // }
+    })
+    .catch((error) => {
+        // Error is an object with:
+        // {
+        //    error: {
+        //      type: 'authorization_cancelled', (or similar)
+        //      message: 'Authorization fail: The user has closed the authorization modal before the process was complete.'  (or similar)
+        //    }
+        // }
+    });
+```
+
+</Tab>
+
+<Tab title="Basic Auth">
+
+For Basic Auth, the `nango.auth()` method is used to store the end-user's username & password (that you have previously collected from them).
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+        credentials: {
+            username: '<END-USER-API-KEY>',
+            password: '<END-USER-PASSWORD>'
+        }
+    })
+    .then((result) => {
+        // result is an object with:
+        // {
+        //      providerConfigKey: '<INTEGRATION-ID>',
+        //      connectionId: '<CONNECTION-ID>
+        // }
+    })
+    .catch((error) => {
+        // Error is an object with:
+        // {
+        //    error: {
+        //      type: 'authorization_cancelled', (or similar)
+        //      message: 'Authorization fail: The user has closed the authorization modal before the process was complete.'  (or similar)
+        //    }
+        // }
+    });
+```
+</Tab>
+
+</Tabs>
+
+<Tip>
+Nango will automatically collect, store and refresh the API credentials as needed.
+</Tip>
+
+
+### OAuth flows requiring extra configuration
+
+Some API Providers require some connection-specific configuration (e.g. Zendesk,
+Shopify).
+
+For example, Zendesk has the following authorization URL, where the subdomain is
+specific to a user's Zendesk account:
+
+```
+https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
+```
+
+To set the subdomain pass in an additional configuration object to
+`nango.auth()`:
+
+```js
+nango.auth('zendesk', '<CONNECTION-ID>', {
+    params: { subdomain: '<ZENDESK-SUBDOMAIN>' }
+});
+```
+
+### Detect when the authorization modal is closed (for OAuth)
+
+Detect when the authorization modal is closed before the authorization flow is completed by
+passing in the extra parameter `detectClosedAuthWindow` to `nango.auth()`:
+
+```js
+nango.auth('zendesk', '<CONNECTION-ID>', {
+     detectClosedAuthWindow: true,
+     ...
+});
+```
+
+### Secure the Frontend SDK calls with HMAC
+
+By default, this feature is disabled and your frontend can attempt to create a new _connection_ using any Integration ID and Connection ID.
+
+But you might want to ensure that the app user is the only one that can create a new connection with that Connection ID.
+
+To enable this feature:
+1. Add a secret HMAC key in your [Project Settings](https://app.nango.dev/project-settings). Pick a large, random value!
+2. Generate the HMAC signature in your backend and pass it to your frontend where you make the `nango.auth` calls.
+2. When ready, enable the HMAC check in the Project settings. Nango will now reject auth calls without or mismatching HMAC signature, so make sure your code is ready before you flip the switch! 
+
+The HMAC digest is generated by your backend using the secret HMAC key you set and the combination of the **Integration ID** and the **Connection ID**. Your backend should keep the secret HMAC key private and not reveal it to your frontend or end-users!
+
+In your frontend, pass the HMAC digest as follows in `nango.auth`:
+
+```ts
+nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', { hmac: '<HMAC-DIGEST>' });
+```
+
+The HMAC digest can be generated by using the following code in your backend (node example):
+
+```js
+import * as crypto from 'node:crypto';
+
+// TODO: execute authentication and authorization checks before generating the HMAC digest.
+
+// The value of '<HMAC-KEY>' should match the secret HMAC key set in your project settings.
+const hmac = crypto.createHmac('sha256', '<HMAC-KEY>');
+hmac.update('<INTEGRATION-ID>:<CONNECTION-ID>');
+const digest = hmac.digest('hex');
+
+// TODO: return the value of `digest` to the frontend to pass to `nango.auth`.
+```
+
+## Troubleshoot authorization errors
+
+If an authorization request fails, you can analyze the relevant log in the _Activity_ tab.
+
+
+## Use a custom callback URL
+
+You can change the callback URL of Nango if you want to personalize it (e.g. use your own domain).
+
+If you are using Nango Cloud, follow these steps:
+
+1. Add a new endpoint in your app, e.g. `https://EXAMPLE.com/oauth-callback`. All requests to this endpoint should redirect to `https://api.nango.dev/oauth/callback` and **pass along all original parameters**. The easiest way to do this is with a 308 redirect.
+2. Change the registered OAuth callback URL with all API providers. Otherwise, they will refuse new flows!
+3. When you are ready, change your Nango callback URL in the Project Settings page ([cloud](https://app.nango.dev/project-settings)).
+
+<Warning>
+Before saving the custom callback URL in Nango, ensure that:
+
+-   the callback URL redirects to `https://api.nango.dev/oauth/callback` (e.g. 308 redirect) and **passes along all query parameters**
+-   your OAuth app, as registered with the external API provider, has the new callback URL whitelisted
+
+</Warning>
+
+If you are self-hosting Nango, follow the instructions [here](/use/self-hosting-instructions) to change your callback URL.
+
+<Tip>
+**Questions, problems, feedback?** Please reach out on the [Slack community](https://nango.dev/slack).
+</Tip>

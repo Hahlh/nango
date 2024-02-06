@@ -73,48 +73,14 @@
                 ]
         },
         {
-            "group": "Ship Integrations",
+            "group": "Integrate Nango",
             "pages": [
-                "general/ship/overview",
+                "general/integrate/overview",
+                "general/integrate/tutorial",
                 {
-                    "group": "Ship An Integration",
+                    "group": "Step-By-Step Guides",
                     "pages": [
-                        "general/ship/guides/setup",
-                        "general/ship/guides/authorize",
-                        "general/ship/guides/sync",
-                        "general/ship/guides/write",
-                        "general/ship/guides/monitor"
-                    ]
-                },
-                {
-                    "group": "Advanced Guides",
-                    "pages": [
-                        "general/ship/advanced/secure-frontend",
-                        {
-                            "group": "Personalize Per Customer",
-                            "pages": [
-                                "general/ship/advanced/personalize/connection-metadata",
-                                "general/ship/advanced/personalize/custom-field-mappings",
-                                "general/ship/advanced/personalize/connection-scopes"
-                            ]
-                        },
-                        {
-                            "group": "Advanced Authorization Features",
-                            "pages": [
-                                "general/ship/advanced/authorization/custom-callback",
-                                "general/ship/advanced/authorization/connection-configuration",
-                                "general/ship/advanced/authorization/raw-credentials"
-                            ]
-                        },
-                        "general/ship/advanced/proxy-requests",
-                        {
-                            "group": "Webhooks",
-                            "pages": [
-                                "general/ship/advanced/app-webhooks",
-                                "general/ship/advanced/external-webhooks"
-                            ]
-                        },
-                        "general/ship/advanced/error-reporting-and-logging"
+                        "general/integrate/guides/authorize-an-api"
                     ]
                 }
             ]
