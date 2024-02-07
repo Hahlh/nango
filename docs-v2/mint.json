@@ -76,11 +76,13 @@
             "group": "Integrate Nango",
             "pages": [
                 "general/integrate/overview",
-                "general/integrate/tutorial",
                 {
-                    "group": "Step-By-Step Guides",
+                    "group": "Step-by-step guides",
                     "pages": [
-                        "general/integrate/guides/authorize-an-api"
+                        "general/integrate/guides/authorize-an-api",
+                        "general/integrate/guides/sync-data-from-an-api",
+                        "general/integrate/guides/perform-workflows-with-an-api",
+                        "general/integrate/guides/proxy-requests-to-an-api"
                     ]
                 }
             ]
